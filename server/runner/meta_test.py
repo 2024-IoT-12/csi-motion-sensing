@@ -52,7 +52,7 @@ class Tester_FSL:
         test_x, test_y = test_data.data_x, test_data.data_y
         test_x = np.expand_dims(test_x, axis=1)
 
-        self.net.load_state_dict(torch.load(self.config['FSL']['test']['save_model_path']))
+        self.net.load_state_dict(torch.load(self.config['FSL']['test']['save_model_path'], map_location=torch.device('cpu')))
 
         running_acc = 0.0
         total_correct_predictions = 0

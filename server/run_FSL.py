@@ -46,7 +46,7 @@ model = proto.load_protonet_vit(
         in_size=[config['application']['client']["window_size"], config['subcarrier'][config['application']['client']["bandwidth"]]]
         )
     
-model.load_state_dict(torch.load(config['application']['FSL']['save_model_path']))
+model.load_state_dict(torch.load(config['application']['FSL']['save_model_path'], map_location=torch.device('cpu')))
 
 if use_cuda:
     model.to(config['GPU']['gpu_ids'][0])

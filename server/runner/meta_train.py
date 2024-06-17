@@ -13,8 +13,9 @@ import runner.proto as proto
 class Trainer_FSL:
     def __init__(self, config):
         self.config = get_config(config)
-        self.use_cuda = self.config['GPU']['cuda']
-        self.device_ids = self.config['GPU']['gpu_ids']
+        self.use_cuda = False
+        # self.device_ids = self.config['GPU']['gpu_ids']
+        self.device = torch.device("cpu")
         self.win_size = self.config['FSL']['dataset']['window_size']
         self.epochs = self.config['FSL']['train']['epoch']
 
@@ -38,14 +39,16 @@ class Trainer_FSL:
         self.support = self.config['FSL']['train']['n_support']
         self.query = self.config['FSL']['train']['n_query']
 
-        if self.use_cuda:
-            self.net.to(self.device_ids[0])
-            self.loss.to(self.device_ids[0])
+        # if self.use_cuda:
+        #     self.net.to(self.device_ids[0])
+        #     self.loss.to(self.device_ids[0])
+        self.net.to(self.device)
+        self.loss.to(self.device)
     
     def train(self) :
         torch_seed(40)
-        print("Cuda: ", torch.cuda.is_available())
-        print("Device id: ", self.device_ids[0])
+        # print("Cuda: ", torch.cuda.is_available())
+        # print("Device id: ", self.device_ids[0])
         print(f"Load Train Dataset.. # window_size:{self.win_size}")
 
         train_data = FSLDataset(self.config['FSL']['dataset']['train_dataset_path'],
