@@ -54,7 +54,7 @@ class Tester_SVL:
         test_dataloader = DATA.DataLoader(test_data, batch_size=self.batch_size, shuffle=True)
 
         # Load trained model
-        self.net.load_state_dict(torch.load(self.config['SVL']['test']['save_model_path']))
+        self.net.load_state_dict(torch.load(self.config['SVL']['test']['save_model_path'], map_location=torch.device('cpu')))
 
         test_acc = 0
         test_loss = 0

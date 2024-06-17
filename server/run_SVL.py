@@ -10,7 +10,6 @@ from runner.utils import get_config
 from model.vit import ViT
 
 config = get_config('config.yaml')
-use_cuda = config['GPU']['cuda']
 
 HOST = config['application']['server']['ip']
 PORT = config['application']['server']['port']
@@ -23,7 +22,6 @@ window_size = config['application']['client']['window_size']
 num_sub = config['subcarrier'][config['application']['client']["bandwidth"]]
 activities = config['application']['client']["activity_labels"]
 
-
 columns = []
 for i in range(0, num_sub):
     columns.append('_' + str(i))
@@ -34,32 +32,30 @@ null_pilot_col_list = ['_' + str(x + 32) for x in [-32, -31, -30, -29, -21, -7, 
 # Load pretrained model
 print('======> Load model')
 model = ViT(
-        in_channels=config['application']['model']['ViT']["in_channels"],
-        patch_size=(config['application']['model']['ViT']["patch_size"], config['subcarrier'][config['application']['client']["bandwidth"]]),
-        embed_dim=config['application']['model']['ViT']["embed_dim"],
-        num_layers=config['application']['model']['ViT']["num_layers"],
-        num_heads=config['application']['model']['ViT']["num_heads"],
-        mlp_dim=config['application']['model']['ViT']["mlp_dim"],
-        num_classes=len(config['application']['client']["activity_labels"]),
-        in_size=[config['application']['client']["window_size"], config['subcarrier'][config['application']['client']["bandwidth"]]]
-        )
+    in_channels=config['application']['model']['ViT']["in_channels"],
+    patch_size=(config['application']['model']['ViT']["patch_size"], config['subcarrier'][config['application']['client']["bandwidth"]]),
+    embed_dim=config['application']['model']['ViT']["embed_dim"],
+    num_layers=config['application']['model']['ViT']["num_layers"],
+    num_heads=config['application']['model']['ViT']["num_heads"],
+    mlp_dim=config['application']['model']['ViT']["mlp_dim"],
+    num_classes=len(config['application']['client']["activity_labels"]),
+    in_size=[config['application']['client']["window_size"], config['subcarrier'][config['application']['client']["bandwidth"]]]
+)
 
-model.load_state_dict(torch.load(config['application']['SVL']['save_model_path']))
+model.load_state_dict(torch.load(config['application']['SVL']['save_model_path'], map_location=torch.device('cpu')))
 
-if use_cuda:
-    model.to(config['GPU']['gpu_ids'][0])
+# if use_cuda:
+#     model.to(config['GPU']['gpu_ids'][0])
 print('======> Success')
-
 
 mac_dict = {}
 mac_dict[mac] = pd.DataFrame(columns=columns)
-#mac_dict[mac].drop(null_pilot_col_list, axis=1, inplace=True)
+# mac_dict[mac].drop(null_pilot_col_list, axis=1, inplace=True)
 
 class MyTcpHandler(socketserver.BaseRequestHandler):
 
     def handle(self):
-        #global use_cuda
-        #print('{0} is connected'.format(self.client_address[0]))
+        # print('{0} is connected'.format(self.client_address[0]))
         buffer = self.request.recv(2048)  # receive data
         buffer = pickle.loads(buffer)
         global P_COUNT
@@ -76,7 +72,7 @@ class MyTcpHandler(socketserver.BaseRequestHandler):
                 2. Keep window_size 50. If 25 packets changed, choose 1 subcarrier and run model.
             '''
             # 1. Remove null & pilot subcarrier
-            #csi_df.drop(null_pilot_col_list, axis=1, inplace=True)
+            # csi_df.drop(null_pilot_col_list, axis=1, inplace=True)
 
             # 2. Keeping window_size. If half packets changed, choose 1 subcarrier and run model
             try:
@@ -85,8 +81,8 @@ class MyTcpHandler(socketserver.BaseRequestHandler):
                     c_data = np.array(mac_dict[mac])
 
                     c_data = torch.from_numpy(c_data).unsqueeze(0).unsqueeze(0).float()
-                    if use_cuda:
-                        c_data = c_data.cuda(0)
+                    # if use_cuda:
+                    #     c_data = c_data.cuda(0)
 
                     pred = model(c_data)
                     print('Predict result: {}'.format(pred))
@@ -97,11 +93,11 @@ class MyTcpHandler(socketserver.BaseRequestHandler):
 
                     P_COUNT = 0
 
-                elif len(mac_dict[mac]) == window_size and P_COUNT == window_size//2:
+                elif len(mac_dict[mac]) == window_size and P_COUNT == window_size // 2:
                     c_data = np.array(mac_dict[mac])
                     c_data = torch.from_numpy(c_data).unsqueeze(0).unsqueeze(0).float()
-                    if use_cuda:
-                        c_data = c_data.cuda(0)
+                    # if use_cuda:
+                    #     c_data = c_data.cuda(0)
 
                     outputs = model(c_data)
                     outputs = F.log_softmax(outputs, dim=1)
@@ -123,11 +119,8 @@ class MyTcpHandler(socketserver.BaseRequestHandler):
                 elif len(mac_dict[mac]) > window_size:
                     print("Error!")
 
-
-
             except Exception as e:
                 print('Error', e)
-
 
 def runServer(HOST, PORT):
     print('==== Start Edge Server ====')
@@ -139,9 +132,6 @@ def runServer(HOST, PORT):
 
     except KeyboardInterrupt:
         print('==== Exit Edge server ====')
-
-
-
 
 if __name__ == '__main__':
     runServer(HOST, PORT)

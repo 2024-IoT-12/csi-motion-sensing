@@ -15,8 +15,9 @@ from torch.optim import lr_scheduler, Adam
 class Trainer_SVL:
     def __init__(self, config):
         self.config = get_config(config)
-        self.use_cuda = self.config['GPU']['cuda']
-        self.device_ids = self.config['GPU']['gpu_ids']
+        self.use_cuda = False
+        # self.device_ids = self.config['GPU']['gpu_ids']
+        self.device = torch.device("cpu")
         self.batch_size = self.config['SVL']['train']['batch_size']
         self.train_proportion = self.config['SVL']['dataset']['train_proportion']
         self.win_size = self.config['SVL']['dataset']['window_size']
@@ -36,16 +37,19 @@ class Trainer_SVL:
         self.optimizer = Adam(self.net.parameters(), lr=self.config['SVL']['train']['lr'])
         self.loss = nn.CrossEntropyLoss()
 
-        if self.use_cuda:
-            self.net.to(self.device_ids[0])
-            self.loss.to(self.device_ids[0])
+        # if self.use_cuda:
+        #     self.net.to(self.device_ids[0])
+        #     self.loss.to(self.device_ids[0])
+        # CPU로 모델 및 손실 함수 설정
+        self.net.to(self.device)
+        self.loss.to(self.device)
 
 
     def train(self):
         # fix torch seed
         torch_seed(40)
-        print("Cuda: ", torch.cuda.is_available())
-        print("Device id: ", self.device_ids[0])
+        # print("Cuda: ", torch.cuda.is_available())
+        # print("Device id: ", self.device_ids[0])
 
         print(f"Load Train Dataset.. # window_size:{self.win_size}")
         train_data = SVLDataset(self.config['SVL']['dataset']['dataset_path'],
@@ -73,9 +77,11 @@ class Trainer_SVL:
                 data_x = data_x.unsqueeze(1).float()
                 data_y = data_y.long()
 
-                if self.use_cuda:
-                    data_x = data_x.to(self.device_ids[0])
-                    data_y = data_y.to(self.device_ids[0])
+                # if self.use_cuda:
+                #     data_x = data_x.to(self.device_ids[0])
+                #     data_y = data_y.to(self.device_ids[0])
+                data_x = data_x.to(self.device)
+                data_y = data_y.to(self.device)
 
                 self.optimizer.zero_grad()
 
