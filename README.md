@@ -1,17 +1,14 @@
-# mowa-wifi-sensing
+# CSI-motion-sensing
+<i>This project is forked from <a href="https://github.com/pjs990301/mowa-wifi-sensing">mowa-wifi-sensing</a></i>
 
-The mowa-wifi-sensing module performs real-time Wi-Fi CSI-based human activity recognition. CSI collected from the [Nexmon extractor](https://github.com/seemoo-lab/nexmon_csi) is delivered to the server using socket communication, and the server uses window-size-CSI-data as an input value for the trained activity classification model.
+The project performs real-time Wi-Fi CSI-based human activity recognition. CSI collected from the [Nexmon extractor](https://github.com/seemoo-lab/nexmon_csi) is delivered to the server using socket communication, and the server uses window-size-CSI-data as an input value for the trained activity classification model.
 
  >**※ Notice ※**  
 >*The current version supports both **supervised learning** and **meta-learning**.*
 
-## README Korean version
-🇰🇷  [README.md in Korean](https://github.com/oss-inc/mowa-wifi-sensing/blob/main/README_KO.md)
-<br/>
-
 ## Activity Classes
 - Empty (default)
-- Fall
+- Run
 - Sit
 - Stand
 - Walk
@@ -19,14 +16,11 @@ The mowa-wifi-sensing module performs real-time Wi-Fi CSI-based human activity r
 ## Getting Started
 Clone this repository on CSI extractor and server:
 ```bash
-git clone https://github.com/oss-inc/mowa-wifi-sensing.git
+git clone https://github.com/2024-IoT-12/csi-motion-sensing.git
 ```
 
 ### 1. Server
 **Computing environment**
-- Ubuntu 20.04
-- Intel(R) i9-9900KF
-- GeForce RTX 2080 Ti 11GB
 - Python 3.8
 
 ### Installation
